@@ -1,7 +1,8 @@
 # depslib dependency file v1.0
-1623058055 source:x:\term 8 coureses\computer graphics\lab projects\conway’s game of life\main.cpp
+1623282693 source:x:\term 8 coureses\computer graphics\lab projects\conway’s game of life\main.cpp
 	<GLUT/glut.h>
 	<GL/glut.h>
+	<stdio.h>
 	<stdlib.h>
 
 1426338928 c:\program files (x86)\codeblocks\mingw\include\gl\glut.h
@@ -227,4 +228,14 @@
 1301111164 c:\program files (x86)\codeblocks\mingw\include\gl\glu.h
 	<stddef.h>
 	<GL/gl.h>
+
+1341006776 c:\program files (x86)\codeblocks\mingw\include\stdio.h
+	<_mingw.h>
+	<stddef.h>
+	<stdarg.h>
+	<sys/types.h>
+
+1341006780 c:\program files (x86)\codeblocks\mingw\include\sys\types.h
+	<_mingw.h>
+	<stddef.h>
 

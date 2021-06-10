@@ -5,16 +5,28 @@
 #else
 #include <GL/glut.h>
 #endif
-
+#include<stdio.h>
 #include <stdlib.h>
 
 int status;
 int cellNextGeneration;
 
+GLubyte pixel;
+
 int column;
 int row;
 
-int aliveOrDeadFlag[20][20];
+int nextGeneration=0;
+int alivesCount=0;
+int alivesNeighboursCount=0;
+
+int aliveOrDeadCells[20][20];
+int aliveCells[20][20];
+int deadCells[20][20];
+
+
+
+int neighborCells[8];
 int aliveOrDeadCounter=0;
 
 int tlX;
@@ -25,6 +37,7 @@ int dlX;
 int dlY;
 int drX;
 int drY;
+int option=0;
 
 int startPointX=0;
 int startPointY=95;
@@ -44,6 +57,17 @@ int logHeight=100;
 int centerX=logWidth/2;
 int centerY=logHeight/2;
 int mouseX=centerX, mouseY=centerY;
+
+
+
+void printSome(char *str,int x,int y,int r,int g,int b) {
+ glColor3f (r, g,b);
+ glRasterPos2d(x,y);
+ for (int i=0;i<strlen(str);i++)
+ glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,str[i]);
+ glFlush();
+}
+
 
 
 void init2D(float r, float g, float b)
@@ -66,27 +90,96 @@ glVertex2f(drX,drY);//down right
 glEnd();
 }
 
-
+//i=row
+//j=coloumn
 void CheckNeighbours(int i,int j)
 {
 
-    /*if(aliveOrDeadFlag[i+1][j]==1||
-       aliveOrDeadFlag[i+1][j+1]==1||
-       aliveOrDeadFlag[i][j+1]==1||
-       aliveOrDeadFlag[i-1][j+1]==1||
-       aliveOrDeadFlag[i-1][j]==1||
-       aliveOrDeadFlag[i-1][j-1]==1||
-       aliveOrDeadFlag[i][j-1]==1||
-       aliveOrDeadFlag[i+1][j-1]==1)
-    {*/
-        glColor3f(1,0,0); //
-        glBegin(GL_QUADS);
-        glVertex2f(i*5,j*5); //down left
-        glVertex2f(i*5,j*5+5); //top left
-        glVertex2f(i*5+5,j*5+5);//top right
-        glVertex2f(i*5+5,j*5);//down right
-        glEnd();
-    //}
+neighborCells[0]=aliveOrDeadCells[i+1][j];//top
+neighborCells[1]=aliveOrDeadCells[i+1][j-1];//top left corner
+neighborCells[2]=aliveOrDeadCells[i][j-1];//left
+neighborCells[3]=aliveOrDeadCells[i-1][j-1];//down left corner
+neighborCells[4]=aliveOrDeadCells[i+1][j+1];//top right corner
+neighborCells[5]=aliveOrDeadCells[i-1][j];//bottom
+neighborCells[6]=aliveOrDeadCells[i-1][j+1];//down right corner
+neighborCells[7]=aliveOrDeadCells[i][j+1];//right
+
+
+
+   for(int i=0;i<8;i++)
+         {
+
+          //printf("%d",neighborCells[i]);
+
+           if(neighborCells[i]==1)
+           {
+
+               alivesNeighboursCount++;
+           }
+
+         }
+        printf("%d",alivesNeighboursCount);
+        printf("\n");
+
+
+       if(alivesNeighboursCount==1||alivesNeighboursCount>3||alivesNeighboursCount==0)
+      {
+
+         deadCells[i][j]=0;
+
+
+      }
+
+
+      else if(alivesNeighboursCount==2||alivesNeighboursCount==3)
+        {
+            aliveCells[i][j]=1;
+        }
+
+
+        for(int i=0;i<20;i++)
+                {
+            for(int j=0;j<20;j++)
+                         {
+
+                             if(aliveOrDeadCells[i][j]==1&&aliveOrDeadCells[i][j-1]==1&&aliveOrDeadCells[i][j+1]==1)
+                             {
+
+                                    aliveCells[i+1][j]=1;
+
+
+
+
+                                    aliveCells[i-1][j]=1;
+
+
+
+                             }
+
+
+
+
+                             if(aliveOrDeadCells[i][j]==1&&aliveOrDeadCells[i+1][j]==1&&aliveOrDeadCells[i-1][j]==1)
+                             {
+
+                                    aliveCells[i][j-1]=1;
+
+
+
+
+                                    aliveCells[i][j+1]=1;
+
+
+
+                             }
+
+
+                         }
+                 }
+
+
+
+
 
 }
 
@@ -95,7 +188,7 @@ void CheckNeighbours(int i,int j)
 
 
 
-
+/***Mouse Function***/
 void mouseClick(int btn, int state, int x, int y)
 {
     if(btn==GLUT_LEFT_BUTTON && state==GLUT_DOWN)
@@ -105,13 +198,120 @@ void mouseClick(int btn, int state, int x, int y)
  mouseY = phyHeight- y;
  mouseY=0.5+1.0*mouseY*logHeight/phyHeight;
 
- for(int i=0;i<600;i=i+5)
+
+ if(option==1)
  {
- for(int j=0;j<600;j=j+5)
+    status=1;
+ }
+
+ if(option==0)
+ {
+     if(mouseX>=35&&mouseX<=65&&mouseY>=50&&mouseY<=60)
+     {
+         option=1;
+     }
+
+     if(mouseX>=35&&mouseX<=65&&mouseY>=30&&mouseY<=40)
+     {
+         exit(1);
+     }
+
+ }
+
+
+
+
+ }
+
+glutPostRedisplay();
+
+}
+
+
+
+
+
+/***Keyboard Function***/
+void specialKeyboard(int key, int x, int y)
+{
+
+if(key== GLUT_KEY_RIGHT)
+    {
+         nextGeneration=1;
+
+    }
+
+    if(key== GLUT_KEY_F2)
+    {
+         option=0;
+
+    }
+
+    if(key== GLUT_KEY_F1)
+    {
+         for(int i=0;i<=20;i++)
+     {
+           for(int j=0;j<=20;j++)
+                  {
+                    aliveOrDeadCells[j][i]=0;
+
+
+                  }
+     }
+
+    }
+
+glutPostRedisplay();
+}
+
+
+
+/***********************************************************************************************************************************************************/
+void display (void)
+{
+    if(option==1)
+    {
+
+
+glClear(GL_COLOR_BUFFER_BIT);
+
+
+
+/***creating The Grid Screen***/
+for(int i=0;i<100;i=i+5)
+{
+glColor3f(0,0,0);
+glBegin(GL_LINES);
+glVertex2i(startPointX2+i,startPointY2);
+glVertex2i(endPointX2+i,endPointY2);
+glEnd();
+
+glColor3f(0,0,0);
+glBegin(GL_LINES);
+glVertex2i(startPointX,startPointY-i);
+glVertex2i(endPointX,endPointY-i);
+glEnd();
+}
+
+
+
+
+
+
+
+/***spotting the alive cell***/
+if(status==1)
+{
+
+  for(int i=0;i<100;i=i+5)
+ {
+ for(int j=0;j<100;j=j+5)
  {
 
-       if( mouseX>=(j) && mouseX<=(j+5) && mouseY >=(i) && mouseY <=(i+5))
+       if( mouseX>(j) && mouseX<(j+5) && mouseY >(i) && mouseY <(i+5))
           {
+
+
 
               tlX=j;
                tlY=i+5;
@@ -126,131 +326,174 @@ void mouseClick(int btn, int state, int x, int y)
                      drX=j+5;
                       drY=i;
 
-                      status=1;
+                     SpotTheAliveCell( tlX, tlY, trX, trY, dlX, dlY, drX, drY);
 
-                      //set an id=1 for this specific cell
-                       aliveOrDeadFlag[dlX/5][dlY/5]=1;
+
+                     aliveOrDeadCells[dlY/5][dlX/5]=1;
+
 
 
           }
 
-
  }
  }
-
-
-
-
-
- }
-
- if(btn==GLUT_RIGHT_BUTTON && state==GLUT_DOWN)
-    {
-        status=0;
-    }
-
-
-
-
- glutPostRedisplay();
-}
-
-
-
-void SpecialInput(int key, int x, int y)
-{
-
-if(key==GLUT_KEY_RIGHT)
-    {
-        //exit(1);
-        for(int i=0;i<20;i++)
+  for(int i=0;i<20;i++)
         {
             for(int j=0;j<20;j++)
             {
-                if(aliveOrDeadFlag[i][j]==1)
+                if(aliveOrDeadCells[j][i]==1)
                 {
 
-                    //CheckNeighbours(j,i);
-                    column=i;
                     row=j;
-                    cellNextGeneration=1;
+                    column=i;
+
+                     int tlX=i*5;
+                     int tlY=j*5+5;
+                     int trX=i*5+5;
+                     int trY=j*5+5;
+                     int dlX=i*5;
+                     int dlY=j*5;
+                     int drX=i*5+5;
+                     int drY=j*5;
+
+                     glColor3f(0,0,1); //
+                     glBegin(GL_QUADS);
+                     glVertex2f(dlX,dlY); //down left
+                     glVertex2f(tlX,tlY); //top left
+                     glVertex2f(trX,trY);//top right
+                     glVertex2f(drX,drY);//down right
+                     glEnd();
+
+
+
+
 
                 }
+
+
+
             }
         }
-
-
-    }
-
-
-    if(key==GLUT_KEY_DOWN)
-    {
-        for(int i=0;i<20;i++)
-        {
-            for(int j=0;j<20;j++)
-            {
-                aliveOrDeadFlag[i][j]=0;
-            }
-        }
-    }
-
-
 
 }
 
 
 
-/***********************************************************************************************************************************************************/
-void display (void)
+
+if(nextGeneration==1)
 {
-//glClear(GL_COLOR_BUFFER_BIT);
 
-
-
+     glClear(GL_COLOR_BUFFER_BIT);
 /***creating The Grid Screen***/
 for(int i=0;i<100;i=i+5)
 {
-glColor3f(1,1,1);
+glColor3f(0,0,0);
 glBegin(GL_LINES);
 glVertex2i(startPointX2+i,startPointY2);
 glVertex2i(endPointX2+i,endPointY2);
 glEnd();
 
-glColor3f(1,1,1);
+glColor3f(0,0,0);
 glBegin(GL_LINES);
 glVertex2i(startPointX,startPointY-i);
 glVertex2i(endPointX,endPointY-i);
 glEnd();
 }
-/***creating The Grid Screen***/
+
+ for(int i=0;i<20;i++)
+        {
+            for(int j=0;j<20;j++)
+            {
+                if(aliveOrDeadCells[j][i]==1)
+                {
+                    alivesCount++;
+
+                    row=j;
+                    column=i;
+                    CheckNeighbours(j,i);
+                    alivesNeighboursCount=0;
+
+
+                }
+
+            }
+        }
+        alivesCount=0;
 
 
 
-if(cellNextGeneration==1)
-{
 
- CheckNeighbours(column,row);
+
+
+                   for(int i=0;i<20;i++)
+                           {
+                             for(int j=0;j<20;j++)
+                                     {
+
+                                         aliveOrDeadCells[i][j]=deadCells[i][j];
+                                         aliveOrDeadCells[i][j]=aliveCells[i][j];
+
+
+                                     }
+                          }
+
+
+for(int i=0;i<20;i++)
+        {
+            for(int j=0;j<20;j++)
+            {
+                if(aliveOrDeadCells[i][j]==1)
+                {
+
+                    row=j;
+                    column=i;
+
+                     int tlX=j*5;
+                     int tlY=i*5+5;
+                     int trX=j*5+5;
+                     int trY=i*5+5;
+                     int dlX=j*5;
+                     int dlY=i*5;
+                     int drX=j*5+5;
+                     int drY=i*5;
+
+                     glColor3f(0,0,1); //
+                     glBegin(GL_QUADS);
+                     glVertex2f(dlX,dlY); //down left
+                     glVertex2f(tlX,tlY); //top left
+                     glVertex2f(trX,trY);//top right
+                     glVertex2f(drX,drY);//down right
+                     glEnd();
+
+
+
+
+
+                }
+
+
+            }
+        }
+
+
+for(int i=0;i<20;i++)
+     {
+ for(int j=0;j<20;j++)
+       {
+           printf("%d ", aliveOrDeadCells[j][i]);
+           if(j==20){
+            printf("\n");
+         }
+
+       }
+     }
+
+
+  nextGeneration=0;
 
 }
 
 
-
-/***spotting the alive cell***/
-if(status==1)
-{
- SpotTheAliveCell( tlX, tlY, trX, trY, dlX, dlY, drX, drY);
-}
-/***spotting the alive cell***/
-
-
-
-        /*glColor3f(0,1,0); //
-        glBegin(GL_QUADS);
-        glVertex2f(5,10); //down left
-        glVertex2f(5,15); //top left
-        glVertex2f(10,15);//top right
-        glVertex2f(10,10);//down right
-        glEnd();*/
 
 
 
@@ -259,6 +502,50 @@ if(status==1)
 glutSwapBuffers();
  glFlush();
 }
+
+
+if(option==0)
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+
+
+
+        printSome("conway's Game Of Life",30,80,0,0,0);
+
+
+                     glColor3f(0,0,1); //
+                     glBegin(GL_QUADS);
+                     glVertex2f(35,50); //down left
+                     glVertex2f(35,60); //top left
+                     glVertex2f(65,60);//top right
+                     glVertex2f(65,50);//down right
+                     glEnd();
+
+
+                     printSome("START",44,54,1,1,1);
+
+
+
+                     glColor3f(0,0,1); //
+                     glBegin(GL_QUADS);
+                     glVertex2f(35,30); //down left
+                     glVertex2f(35,40); //top left
+                     glVertex2f(65,40);//top right
+                     glVertex2f(65,30);//down right
+                     glEnd();
+
+
+                     printSome("EXIT",44,34,1,1,1);
+
+
+
+
+
+ glutSwapBuffers();
+ glFlush();
+    }
+
+    }
 /***********************************************************************************************************************************************************/
 int main(int argc,char *argv[])
 {
@@ -272,16 +559,21 @@ glutInitWindowPosition (100, 100);
 glutCreateWindow ("Conway's Game Of Life");
 init2D(253/100, 254/100, 254/100);
 glutDisplayFunc(display);
-glutSpecialFunc(SpecialInput);
+glutSpecialFunc(specialKeyboard);
 glutMouseFunc(mouseClick);
 glutMainLoop();
 }
 
+/*
+for(int i=0;i<20;i++)
+     {
+ for(int j=0;j<20;j++)
+       {
+           printf("%d ", aliveOrDeadFlag[j][i]);
+           if(j==20){
+            printf("\n");
+         }
 
-/*glColor3f(0,1,0); //
-        glBegin(GL_QUADS);
-        glVertex2f(5,10); //down left
-        glVertex2f(5,15); //top left
-        glVertex2f(10,15);//top right
-        glVertex2f(10,10);//down right
-        glEnd();*/
+       }
+     }*/
+
