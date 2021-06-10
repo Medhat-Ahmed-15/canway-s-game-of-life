@@ -21,8 +21,7 @@ int alivesCount=0;
 int alivesNeighboursCount=0;
 
 int aliveOrDeadCells[20][20];
-int aliveCells[20][20];
-int deadCells[20][20];
+int nextGenerationCells[20][20];
 
 
 
@@ -57,6 +56,26 @@ int logHeight=100;
 int centerX=logWidth/2;
 int centerY=logHeight/2;
 int mouseX=centerX, mouseY=centerY;
+
+
+
+void createGridScreen()
+{
+for(int i=0;i<100;i=i+5)
+{
+glColor3f(0,0,0);
+glBegin(GL_LINES);
+glVertex2i(startPointX2+i,startPointY2);
+glVertex2i(endPointX2+i,endPointY2);
+glEnd();
+
+glColor3f(0,0,0);
+glBegin(GL_LINES);
+glVertex2i(startPointX,startPointY-i);
+glVertex2i(endPointX,endPointY-i);
+glEnd();
+}
+}
 
 
 
@@ -125,7 +144,7 @@ neighborCells[7]=aliveOrDeadCells[i][j+1];//right
        if(alivesNeighboursCount==1||alivesNeighboursCount>3||alivesNeighboursCount==0)
       {
 
-         deadCells[i][j]=0;
+         nextGenerationCells[i][j]=0;
 
 
       }
@@ -133,7 +152,7 @@ neighborCells[7]=aliveOrDeadCells[i][j+1];//right
 
       else if(alivesNeighboursCount==2||alivesNeighboursCount==3)
         {
-            aliveCells[i][j]=1;
+            nextGenerationCells[i][j]=1;
         }
 
 
@@ -145,12 +164,8 @@ neighborCells[7]=aliveOrDeadCells[i][j+1];//right
                              if(aliveOrDeadCells[i][j]==1&&aliveOrDeadCells[i][j-1]==1&&aliveOrDeadCells[i][j+1]==1)
                              {
 
-                                    aliveCells[i+1][j]=1;
-
-
-
-
-                                    aliveCells[i-1][j]=1;
+                                    nextGenerationCells[i+1][j]=1;
+                                    nextGenerationCells[i-1][j]=1;
 
 
 
@@ -162,12 +177,8 @@ neighborCells[7]=aliveOrDeadCells[i][j+1];//right
                              if(aliveOrDeadCells[i][j]==1&&aliveOrDeadCells[i+1][j]==1&&aliveOrDeadCells[i-1][j]==1)
                              {
 
-                                    aliveCells[i][j-1]=1;
-
-
-
-
-                                    aliveCells[i][j+1]=1;
+                                    nextGenerationCells[i][j-1]=1;
+                                    nextGenerationCells[i][j+1]=1;
 
 
 
@@ -249,15 +260,16 @@ if(key== GLUT_KEY_RIGHT)
 
     if(key== GLUT_KEY_F1)
     {
-         for(int i=0;i<=20;i++)
+         for(int i=0;i<20;i++)
      {
-           for(int j=0;j<=20;j++)
+           for(int j=0;j<20;j++)
                   {
                     aliveOrDeadCells[j][i]=0;
-
-
+                    nextGenerationCells[i][j]=0;
+                    status=0;
                   }
      }
+
 
     }
 
@@ -273,26 +285,16 @@ void display (void)
     {
 
 
+
+
+
+
 glClear(GL_COLOR_BUFFER_BIT);
 
 
 
 /***creating The Grid Screen***/
-for(int i=0;i<100;i=i+5)
-{
-glColor3f(0,0,0);
-glBegin(GL_LINES);
-glVertex2i(startPointX2+i,startPointY2);
-glVertex2i(endPointX2+i,endPointY2);
-glEnd();
-
-glColor3f(0,0,0);
-glBegin(GL_LINES);
-glVertex2i(startPointX,startPointY-i);
-glVertex2i(endPointX,endPointY-i);
-glEnd();
-}
-
+createGridScreen();
 
 
 
@@ -382,23 +384,13 @@ if(status==1)
 
 if(nextGeneration==1)
 {
-
-     glClear(GL_COLOR_BUFFER_BIT);
 /***creating The Grid Screen***/
-for(int i=0;i<100;i=i+5)
-{
-glColor3f(0,0,0);
-glBegin(GL_LINES);
-glVertex2i(startPointX2+i,startPointY2);
-glVertex2i(endPointX2+i,endPointY2);
-glEnd();
 
-glColor3f(0,0,0);
-glBegin(GL_LINES);
-glVertex2i(startPointX,startPointY-i);
-glVertex2i(endPointX,endPointY-i);
-glEnd();
-}
+glClear(GL_COLOR_BUFFER_BIT);
+createGridScreen();
+
+
+
 
  for(int i=0;i<20;i++)
         {
@@ -425,17 +417,20 @@ glEnd();
 
 
 
+
+
                    for(int i=0;i<20;i++)
                            {
                              for(int j=0;j<20;j++)
                                      {
 
-                                         aliveOrDeadCells[i][j]=deadCells[i][j];
-                                         aliveOrDeadCells[i][j]=aliveCells[i][j];
+                                         aliveOrDeadCells[i][j]=nextGenerationCells[i][j];
 
 
                                      }
                           }
+
+
 
 
 for(int i=0;i<20;i++)
@@ -490,6 +485,7 @@ for(int i=0;i<20;i++)
 
 
   nextGeneration=0;
+
 
 }
 
@@ -576,4 +572,16 @@ for(int i=0;i<20;i++)
 
        }
      }*/
+
+     /*
+     for(int i=0;i<20;i++)
+                           {
+                             for(int j=0;j<20;j++)
+                                     {
+
+                                         aliveOrDeadCells[i][j]=0;
+
+
+                                     }
+                          }*/
 
